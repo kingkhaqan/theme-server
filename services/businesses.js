@@ -6,8 +6,56 @@ const database = client.db(process.env.DB_NAME);
 const businessCollection = database.collection(process.env.COLLECTION_BUSINESS);
 const sectionsCollection = database.collection(process.env.COLLECTION_SECTION);
 
+const updateBusinessSettings = async (req, res) => {
+    const name = req.params.name
+    const newThemeSettings = req.body
 
-const getBusinessByName = async (req, res)=>{
+    delete newThemeSettings['_id']
+    delete newThemeSettings['id']
+
+
+    let response = {
+        success: false,
+        code: 404,
+        data: []
+    }
+
+    try {
+        const business = await businessCollection.findOne({ name })
+        Object.assign(business, newThemeSettings)
+        const results = await businessCollection.updateOne({ _id: business._id }, { $set: business })
+
+        if (results.acknowledged) {
+
+            response = {
+                success: true,
+                code: 200,
+                data: {
+                    business
+                }
+            }
+        }
+        else {
+            response = {
+                success: false,
+                code: 400,
+                data: {},
+                error: 'Could not update'
+            }
+        }
+
+    } catch (error) {
+        console.log(error);
+        response = { success: false, code: 400, data: [], error: String(error) }
+    }
+
+
+
+    res.json(response)
+    return
+}
+
+const getBusinessByName = async (req, res) => {
     const name = req.params.name
 
     let response = {
@@ -17,7 +65,7 @@ const getBusinessByName = async (req, res)=>{
     }
 
     try {
-        const business = await businessCollection.findOne({name})
+        const business = await businessCollection.findOne({ name })
         if (business) {
             response = {
                 success: true,
@@ -35,10 +83,10 @@ const getBusinessByName = async (req, res)=>{
 
 
     res.json(response)
-    return   
+    return
 }
 
-const getBusinessById = async (req, res)=>{
+const getBusinessById = async (req, res) => {
     const id = req.params.id
 
     let response = {
@@ -48,7 +96,7 @@ const getBusinessById = async (req, res)=>{
     }
 
     try {
-        const business = await businessCollection.findOne({business_id: Number(id)})
+        const business = await businessCollection.findOne({ business_id: Number(id) })
         console.log(id, business);
         if (business) {
             response = {
@@ -67,10 +115,10 @@ const getBusinessById = async (req, res)=>{
 
 
     res.json(response)
-    return   
+    return
 }
 
-const getSections = async (req, res)=>{
+const getSections = async (req, res) => {
     const business_id = req.params.id
     let response = {
         success: false,
@@ -79,13 +127,13 @@ const getSections = async (req, res)=>{
     }
 
     try {
-        const sections = await sectionsCollection.find({business_id: Number(business_id)}).toArray()
-        if (sections.length>0) {
+        const sections = await sectionsCollection.find({ business_id: Number(business_id) }).toArray()
+        if (sections.length > 0) {
 
             /**
              * Sort sections by order
              */
-            sections.sort((a, b)=> a.order-b.order)
+            sections.sort((a, b) => a.order - b.order)
 
             response = {
                 success: true,
@@ -103,11 +151,12 @@ const getSections = async (req, res)=>{
 
 
     res.json(response)
-    return 
+    return
 }
 
 module.exports = {
     getBusinessByName,
     getBusinessById,
-    getSections
+    getSections,
+    updateBusinessSettings
 }
