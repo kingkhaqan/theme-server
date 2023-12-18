@@ -58,6 +58,8 @@ const updateBusinessSettings = async (req, res) => {
 const getBusinessByName = async (req, res) => {
     const name = req.params.name
 
+    console.log(name);
+
     let response = {
         success: false,
         code: 404,
@@ -80,6 +82,8 @@ const getBusinessByName = async (req, res) => {
         response = { success: false, code: 400, data: [], error: String(error) }
     }
 
+
+    console.log(response);
 
 
     res.json(response)
